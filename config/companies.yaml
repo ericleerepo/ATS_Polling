@@ -1,0 +1,76 @@
+# Target companies. Every entry was verified live against its ATS public API
+# (job count > 0 on 2026-08-02). `priority: true` = hand-picked top target,
+# gets a visual flag in the digest regardless of score.
+#
+# ATS endpoints polled:
+#   greenhouse: boards-api.greenhouse.io/v1/boards/{token}/jobs?content=true
+#   lever:      api.lever.co/v0/postings/{token}?mode=json
+#   ashby:      api.ashbyhq.com/posting-api/job-board/{token}?includeCompensation=true
+
+companies:
+  # --- FDE / applied AI ---
+  - {name: Sierra, ats: ashby, token: sierra, priority: true}
+  - {name: Decagon, ats: ashby, token: decagon, priority: true}
+  - {name: Glean, ats: greenhouse, token: gleanwork, priority: true}
+  - {name: Cresta, ats: greenhouse, token: cresta, priority: true}
+  - {name: Harvey, ats: ashby, token: harvey, priority: true}
+  - {name: Cursor (Anysphere), ats: ashby, token: cursor, priority: true}
+  - {name: Ramp, ats: ashby, token: ramp, priority: true}
+  - {name: Scale AI, ats: greenhouse, token: scaleai, priority: true}
+  - {name: Databricks, ats: greenhouse, token: databricks, priority: true}
+  - {name: Distyl AI, ats: ashby, token: distyl}
+  - {name: Writer, ats: ashby, token: writer}
+  - {name: Mercor, ats: ashby, token: mercor}
+  - {name: Sardine, ats: ashby, token: sardine}
+
+  # --- labs / large ---
+  - {name: OpenAI, ats: ashby, token: openai, priority: true}
+  - {name: Anthropic, ats: greenhouse, token: anthropic, priority: true}
+  - {name: Palantir, ats: lever, token: palantir, priority: true}
+  - {name: xAI, ats: greenhouse, token: xai}
+
+  # --- health / clinical AI (domain edge: thin applicant pools) ---
+  - {name: Abridge, ats: ashby, token: abridge, priority: true}
+  - {name: Ambience Healthcare, ats: ashby, token: ambiencehealthcare, priority: true}
+  - {name: OpenEvidence, ats: ashby, token: openevidence, priority: true}
+  - {name: Commure, ats: ashby, token: commure}
+  - {name: Notable, ats: ashby, token: notable}
+  - {name: Nabla, ats: ashby, token: nabla}
+  - {name: SmarterDx, ats: greenhouse, token: smarterdx}
+  - {name: Regard, ats: ashby, token: regard}
+  - {name: Suki, ats: greenhouse, token: suki}
+  - {name: Anterior, ats: ashby, token: anterior}
+  - {name: Tennr, ats: ashby, token: tennr}
+  - {name: Layer Health, ats: greenhouse, token: layerhealth}
+  - {name: Elation Health, ats: greenhouse, token: elationhealth}
+  - {name: Qventus, ats: greenhouse, token: qventus}
+
+  # --- AI tooling / infra / platform ---
+  - {name: Perplexity, ats: ashby, token: perplexity}
+  - {name: Together AI, ats: greenhouse, token: togetherai}
+  - {name: Cohere, ats: ashby, token: cohere}
+  - {name: LangChain, ats: ashby, token: langchain}
+  - {name: Baseten, ats: ashby, token: baseten}
+  - {name: Modal, ats: ashby, token: modal}
+  - {name: Braintrust, ats: ashby, token: braintrust}
+  - {name: Elicit, ats: ashby, token: elicit}
+  - {name: Cerebras, ats: ashby, token: cerebras}
+  - {name: Fireworks AI, ats: ashby, token: fireworksai}
+  - {name: Cognition (Windsurf), ats: ashby, token: cognition}
+  - {name: Sourcegraph, ats: greenhouse, token: sourcegraph91}
+  - {name: Vanta, ats: ashby, token: vanta}
+  - {name: Notion, ats: ashby, token: notion}
+  - {name: Vercel, ats: greenhouse, token: vercel}
+  - {name: Temporal, ats: greenhouse, token: temporaltechnologies}
+
+  # --- disabled: Getro boards need a real browser session (backend 500s/times
+  # out for HTTP clients). Poller exists (pollers/getro.py); re-enable if their
+  # API opens up. Value per spec is company discovery, done manually instead.
+  # - {name: a16z portfolio, ats: getro, token: jobs.a16z.com}
+
+# Not pollable (no public structured board) — manual checklist, see digest footer:
+#   Google Cloud (custom careers site)
+#   Hippocratic AI (JS-rendered careers page, no embedded ATS)
+#   Groq, Weights & Biases, Retool, Applied Intuition, Clay, Heidi Health,
+#   Hebbia, Innovaccer, Memora Health (no public Greenhouse/Lever/Ashby board
+#   found); Mistral AI (Lever board exists but is empty)

@@ -1,0 +1,101 @@
+{
+ "jobs": [
+  {
+   "absolute_url": "https://job-boards.greenhouse.io/smarterdx/jobs/5193736007",
+   "data_compliance": [
+    {
+     "type": "gdpr",
+     "requires_consent": false,
+     "requires_processing_consent": false,
+     "requires_retention_consent": false,
+     "retention_period": null,
+     "demographic_data_consent_applies": false
+    }
+   ],
+   "internal_job_id": 4659691007,
+   "location": {
+    "name": "Remote (United States)"
+   },
+   "metadata": null,
+   "id": 5193736007,
+   "updated_at": "2026-07-27T14:17:12-04:00",
+   "requisition_id": "303",
+   "title": "Client Support Analyst I",
+   "company_name": "SmarterDx",
+   "first_published": "2026-07-27T13:48:30-04:00",
+   "language": "en",
+   "application_deadline": null,
+   "content": "&lt;div class=&quot;content-intro&quot;&gt;&lt;p&gt;SmarterDx is transforming how health systems use clinical AI to capture the full value of patient care delivered. Built by physician-data scientists and trained on clinically-validated EHR data, our clinical AI platform interprets the nuances behind every patient story and makes clinically-sound recommendations for revenue cycle teams \u2014 helping hospitals recover earned revenue, improve quality metrics, reduce denials, and streamline revenue cycle operations. As a Smartian, you\u2019ll help build technology that makes healthcare more accurate, sustainable, and effective for everyone. Learn more at &lt;span&gt;&lt;a href=&quot;http://smarterdx.com/careers&quot; target=&quot;_blank&quot;&gt;smarterdx.com/careers&lt;/a&gt;&lt;/span&gt;.&lt;/p&gt;&lt;/div&gt;&lt;h3&gt;Role&lt;/h3&gt;\n&lt;p&gt;SmarterDx is seeking a part-time Client Support Analyst (&lt;strong&gt;no more than 25 hours a week, 5PM - 9PM ET&lt;/strong&gt;) who thrives on solving complex problems and taking ownership from initial intake through resolution. As the first point of contact for our clients, you&#39;ll investigate technical and workflow issues, determine the appropriate next step, communicate clearly with stakeholders, and independently drive tickets forward while collaborating with internal teams when additional expertise is needed.&lt;/p&gt;\n&lt;p&gt;Success in this role requires strong critical thinking, sound judgment, exceptional written communication, and the ability to distinguish between issues you can resolve independently and those requiring escalation. Our Client Support Analysts are expected to investigate thoroughly, leverage documentation, and use internal experts as collaborative resources\u2014not as routine decision makers.&lt;/p&gt;\n&lt;p&gt;Our Client Support team values ownership over handoffs. Client Support Analysts are expected to investigate issues thoroughly, leverage documentation and historical knowledge, communicate proactively with clients, and use teammates as collaborative partners rather than approval checkpoints. Success is measured not only by responsiveness, but by judgment, accountability, and the ability to consistently move clients issues toward resolution.&lt;/p&gt;\n&lt;h3&gt;What You&#39;ll Do&lt;/h3&gt;\n&lt;ul&gt;\n&lt;li&gt;Serve as the initial point of contact for end user inquiries, providing timely and effective support via email, chat, and chat&lt;/li&gt;\n&lt;li&gt;Build and maintain strong relationships with end users, demonstrating empathy and understanding of their needs and challenges&lt;/li&gt;\n&lt;li&gt;Troubleshoot and resolve technical issues related to our application, distinguishing between user errors and system-level problems&lt;/li&gt;\n&lt;li&gt;Escalate complex technical issues to the appropriate team when necessary, providing clear and detailed information about the problem&lt;/li&gt;\n&lt;li&gt;Stay up-to-date with product updates and features to provide accurate and current support&lt;/li&gt;\n&lt;li&gt;Own clients issues from intake through resolution, ensuring every interaction moves the issue meaningfully forward&lt;/li&gt;\n&lt;li&gt;Investigate problems using internal documentation, historical tickets, product knowledge, and available troubleshooting tools before escalating&lt;/li&gt;\n&lt;li&gt;Determine the most appropriate next step based on available information rather than waiting for direction&lt;/li&gt;\n&lt;li&gt;Communicate clear, concise updates to clients and internal stakeholders throughout the lifecycle of a ticket&lt;/li&gt;\n&lt;li&gt;Escalate issues only after documenting investigation findings, attempted resolutions, and remaining blockers&lt;/li&gt;\n&lt;li&gt;Balance competing priorities while maintaining momentum across multiple active client issues&lt;/li&gt;\n&lt;/ul&gt;\n&lt;h3&gt;What You Bring&lt;/h3&gt;\n&lt;ul&gt;\n&lt;li&gt;3-5 years experience in technical support or client service roles, preferably in healthcare technology or SaaS&lt;/li&gt;\n&lt;li&gt;&lt;strong&gt;Must have strong experience in at least two of the following:&lt;/strong&gt;\n&lt;ul&gt;\n&lt;li&gt;Technical troubleshooting and problem-solving&lt;/li&gt;\n&lt;li&gt;Clinical documentation improvement (CDI) processes&lt;/li&gt;\n&lt;li&gt;Healthcare information systems/electronic medical records (EMRs)&lt;/li&gt;\n&lt;/ul&gt;\n&lt;/li&gt;\n&lt;li&gt;Excellent communication skills, with the ability to explain technical concepts to non-technical users&lt;/li&gt;\n&lt;li&gt;Strong empathy and patience, with a genuine desire to help users succeed&lt;/li&gt;\n&lt;li&gt;Experience with Jira, Zendesk, or other ticketing systems&lt;/li&gt;\n&lt;li&gt;Experience with Slack&lt;/li&gt;\n&lt;li&gt;Ability to quickly learn and adapt to new technologies and processes&lt;/li&gt;\n&lt;li&gt;Excellent time management and prioritization skills in a remote environment&lt;/li&gt;\n&lt;li&gt;Proactive approach to identifying and resolving potential issues before they escalate&lt;/li&gt;\n&lt;li&gt;Demonstrated ability to independently troubleshoot ambiguous technical problems&lt;/li&gt;\n&lt;li&gt;Strong critical thinking skills with the ability to analyze incomplete information and make sound decisions&lt;/li&gt;\n&lt;li&gt;Excellent written communication with the ability to explain technical concepts clearly to both technical and non-technical audiences&lt;/li&gt;\n&lt;li&gt;Ability to prioritize competing work while maintaining ownership of multiple client issues&lt;/li&gt;\n&lt;li&gt;Proven attention to detail in documentation, client communications, and process execution&lt;/li&gt;\n&lt;li&gt;Comfort working within defined processes while exercising sound judgment when situations fall outside documented guidance&lt;/li&gt;\n&lt;li&gt;Ability to receive feedback and quickly incorporate it into future work&lt;/li&gt;\n&lt;/ul&gt;\n&lt;h3&gt;Nice to Haves&lt;/h3&gt;\n&lt;ul&gt;\n&lt;li&gt;Experience with electronic medical records (EMRs) or related healthcare applications&lt;/li&gt;\n&lt;li&gt;Knowledge of medical terminology and hospital workflows&lt;/li&gt;\n&lt;li&gt;Salesforce and/or SQL experience&lt;/li&gt;\n&lt;/ul&gt;\n&lt;h3&gt;Compensation&lt;/h3&gt;\n&lt;p&gt;$34.62/hour&lt;/p&gt;\n&lt;p&gt;&amp;nbsp;&lt;/p&gt;&lt;div class=&quot;content-conclusion&quot;&gt;&lt;h3&gt;Benefits&lt;/h3&gt;\n&lt;ul class=&quot;p-rich_text_list p-rich_text_list__bullet p-rich_text_list--nested&quot; data-stringify-type=&quot;unordered-list&quot; data-list-tree=&quot;true&quot; data-indent=&quot;0&quot; data-border=&quot;0&quot;&gt;\n&lt;li data-stringify-indent=&quot;0&quot; data-stringify-border=&quot;0&quot;&gt;&lt;strong data-stringify-type=&quot;bold&quot;&gt;Medical, Dental &amp;amp; Vision&lt;/strong&gt; \u2013 Comprehensive plans with leading insurance providers, covering 75% of your premiums, depending on the plan.&lt;/li&gt;\n&lt;li data-stringify-indent=&quot;0&quot; data-stringify-border=&quot;0&quot;&gt;&lt;strong data-stringify-type=&quot;bold&quot;&gt;Paid Parental Leave&lt;/strong&gt; \u2013 Generous paid leave to support families through birth or adoption: Up to 12 weeks for parents.&lt;/li&gt;\n&lt;li data-stringify-indent=&quot;0&quot; data-stringify-border=&quot;0&quot;&gt;&lt;strong data-stringify-type=&quot;bold&quot;&gt;Remote-First Team&lt;/strong&gt; \u2013 Work from anywhere in the U.S.&lt;/li&gt;\n&lt;li data-stringify-indent=&quot;0&quot; data-stringify-border=&quot;0&quot;&gt;&lt;strong data-stringify-type=&quot;bold&quot;&gt;Unlimited PTO &amp;amp; 10 Holidays&lt;/strong&gt; \u2013 So you can relax and recharge.&lt;/li&gt;\n&lt;li data-stringify-indent=&quot;0&quot; data-stringify-border=&quot;0&quot;&gt;&lt;strong data-stringify-type=&quot;bold&quot;&gt;401(k) with Traditional &amp;amp; Roth Options&amp;nbsp;&lt;/strong&gt;\u2013 Tax-advantaged retirement savings through Fidelity with a 4% match.&lt;/li&gt;\n&lt;li data-stringify-indent=&quot;0&quot; data-stringify-border=&quot;0&quot;&gt;&lt;strong data-stringify-type=&quot;bold&quot;&gt;Minimal Bureaucracy&lt;/strong&gt;&amp;nbsp;\u2013 A fast-moving, high-impact environment where you can focus on what matters.&lt;/li&gt;\n&lt;li data-stringify-indent=&quot;0&quot; data-stringify-border=&quot;0&quot;&gt;&lt;strong data-stringify-type=&quot;bold&quot;&gt;Incredible Teammates!&lt;/strong&gt;&amp;nbsp;\u2013 Work alongside smart, supportive, and mission-driven colleagues.&lt;/li&gt;\n&lt;/ul&gt;&lt;/div&gt;",
+   "departments": [
+    {
+     "id": 4063398007,
+     "name": "Customer Success ",
+     "child_ids": [],
+     "parent_id": 4062540007
+    }
+   ],
+   "offices": [
+    {
+     "id": 4054597007,
+     "name": "Remote",
+     "location": null,
+     "child_ids": [],
+     "parent_id": null
+    }
+   ],
+   "ai_disclaimer": null,
+   "include_ai_disclaimer": null,
+   "ai_opt_out_request_url": null
+  },
+  {
+   "absolute_url": "https://job-boards.greenhouse.io/smarterdx/jobs/5099964007",
+   "data_compliance": [
+    {
+     "type": "gdpr",
+     "requires_consent": false,
+     "requires_processing_consent": false,
+     "requires_retention_consent": false,
+     "retention_period": null,
+     "demographic_data_consent_applies": false
+    }
+   ],
+   "internal_job_id": 4614419007,
+   "location": {
+    "name": "Remote (United States)"
+   },
+   "metadata": null,
+   "id": 5099964007,
+   "updated_at": "2026-07-16T11:04:02-04:00",
+   "requisition_id": "280",
+   "title": "Clinical Coding Specialist ",
+   "company_name": "SmarterDx",
+   "first_published": "2026-04-06T09:38:12-04:00",
+   "language": "en",
+   "application_deadline": null,
+   "content": "&lt;div class=&quot;content-intro&quot;&gt;&lt;p&gt;SmarterDx is transforming how health systems use clinical AI to capture the full value of patient care delivered. Built by physician-data scientists and trained on clinically-validated EHR data, our clinical AI platform interprets the nuances behind every patient story and makes clinically-sound recommendations for revenue cycle teams \u2014 helping hospitals recover earned revenue, improve quality metrics, reduce denials, and streamline revenue cycle operations. As a Smartian, you\u2019ll help build technology that makes healthcare more accurate, sustainable, and effective for everyone. Learn more at &lt;span&gt;&lt;a href=&quot;http://smarterdx.com/careers&quot; target=&quot;_blank&quot;&gt;smarterdx.com/careers&lt;/a&gt;&lt;/span&gt;.&lt;/p&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;Clinical Coding Specialist (Inpatient)&lt;/strong&gt;&lt;/p&gt;\n&lt;p&gt;&lt;strong&gt;Role&lt;/strong&gt;&lt;/p&gt;\n&lt;p&gt;As an Inpatient Coding Specialist at SmarterDx, you will be responsible for conducting comprehensive chart reviews and coding validation of AI diagnostic models to support coding improvement. This role is instrumental in ensuring our AI models are clinically accurate and of high-quality.&lt;/p&gt;\n&lt;p&gt;&lt;em&gt;**This role is fully remote within the US**&lt;/em&gt;&lt;/p&gt;\n&lt;p&gt;&lt;strong&gt;What You\u2019ll Do&lt;/strong&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;Review and analyze medical records to ensure coding accuracy in a timely fashion&lt;/li&gt;\n&lt;li&gt;Identify opportunities for improvement in coding models&lt;/li&gt;\n&lt;li&gt;Understand and apply coding guidelines to assign appropriate codes to diagnoses and procedures as supported by clinical documentation&lt;/li&gt;\n&lt;li&gt;Participate in ongoing training and professional development to stay current on documentation and coding guidelines&lt;/li&gt;\n&lt;li&gt;Contribute to process improvement efforts to enhance coding practices and support efficient and effective healthcare delivery&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;&lt;strong&gt;What You Bring&lt;/strong&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;5+ years of recent experience in performing inpatient coding and/or auditing&lt;/li&gt;\n&lt;li&gt;Strong expertise in ICD-10 classification system&lt;/li&gt;\n&lt;li&gt;Active RHIA, RHIT, and/or CCS credential(s)&lt;/li&gt;\n&lt;li&gt;Experience reviewing complex medical records and applying coding conventions and guidelines accurately&lt;/li&gt;\n&lt;li&gt;Familiarity with DRG and inpatient reimbursement methodologies&lt;/li&gt;\n&lt;li&gt;Strong attention to detail and ability to identify subtle coding inaccuracies&lt;/li&gt;\n&lt;li&gt;Experience with coding audits, QA, or validation workflows&lt;/li&gt;\n&lt;li&gt;Strong written communication for documenting rationale and feedback&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;&lt;strong&gt;Nice To Haves&lt;/strong&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;Experience working with AI coding tools or CAC (computer-assisted coding) systems&lt;/li&gt;\n&lt;li&gt;Prior experience in auditing or coding quality assurance roles&lt;/li&gt;\n&lt;li&gt;Familiarity with evaluation frameworks, labeling, or annotation workflows&lt;/li&gt;\n&lt;li&gt;Certified Clinical Documentation Specialist (CCDS) or Clinical Documentation Improvement Practitioner (CDIP) credentials&lt;/li&gt;\n&lt;/ul&gt;\n&lt;h3&gt;Compensation&lt;/h3&gt;\n&lt;ul&gt;\n&lt;li&gt;$75k - $105k salary + benefits, 100% US-based remote&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;&lt;em&gt;#LI-Remote&lt;/em&gt;&lt;/p&gt;\n&lt;p&gt;&lt;em&gt;#LI-DNP&lt;/em&gt;&lt;/p&gt;&lt;div class=&quot;content-conclusion&quot;&gt;&lt;h3&gt;Benefits&lt;/h3&gt;\n&lt;ul class=&quot;p-rich_text_list p-rich_text_list__bullet p-rich_text_list--nested&quot; data-stringify-type=&quot;unordered-list&quot; data-list-tree=&quot;true&quot; data-indent=&quot;0&quot; data-border=&quot;0&quot;&gt;\n&lt;li data-stringify-indent=&quot;0&quot; data-stringify-border=&quot;0&quot;&gt;&lt;strong data-stringify-type=&quot;bold&quot;&gt;Medical, Dental &amp;amp; Vision&lt;/strong&gt; \u2013 Comprehensive plans with leading insurance providers, covering 75% of your premiums, depending on the plan.&lt;/li&gt;\n&lt;li data-stringify-indent=&quot;0&quot; data-stringify-border=&quot;0&quot;&gt;&lt;strong data-stringify-type=&quot;bold&quot;&gt;Paid Parental Leave&lt;/strong&gt; \u2013 Generous paid leave to support families through birth or adoption: Up to 12 weeks for parents.&lt;/li&gt;\n&lt;li data-stringify-indent=&quot;0&quot; data-stringify-border=&quot;0&quot;&gt;&lt;strong data-stringify-type=&quot;bold&quot;&gt;Remote-First Team&lt;/strong&gt; \u2013 Work from anywhere in the U.S.&lt;/li&gt;\n&lt;li data-stringify-indent=&quot;0&quot; data-stringify-border=&quot;0&quot;&gt;&lt;strong data-stringify-type=&quot;bold&quot;&gt;Unlimited PTO &amp;amp; 10 Holidays&lt;/strong&gt; \u2013 So you can relax and recharge.&lt;/li&gt;\n&lt;li data-stringify-indent=&quot;0&quot; data-stringify-border=&quot;0&quot;&gt;&lt;strong data-stringify-type=&quot;bold&quot;&gt;401(k) with Traditional &amp;amp; Roth Options&amp;nbsp;&lt;/strong&gt;\u2013 Tax-advantaged retirement savings through Fidelity with a 4% match.&lt;/li&gt;\n&lt;li data-stringify-indent=&quot;0&quot; data-stringify-border=&quot;0&quot;&gt;&lt;strong data-stringify-type=&quot;bold&quot;&gt;Minimal Bureaucracy&lt;/strong&gt;&amp;nbsp;\u2013 A fast-moving, high-impact environment where you can focus on what matters.&lt;/li&gt;\n&lt;li data-stringify-indent=&quot;0&quot; data-stringify-border=&quot;0&quot;&gt;&lt;strong data-stringify-type=&quot;bold&quot;&gt;Incredible Teammates!&lt;/strong&gt;&amp;nbsp;\u2013 Work alongside smart, supportive, and mission-driven colleagues.&lt;/li&gt;\n&lt;/ul&gt;&lt;/div&gt;",
+   "departments": [
+    {
+     "id": 4063396007,
+     "name": "Clinical Operations ",
+     "child_ids": [],
+     "parent_id": 4062540007
+    }
+   ],
+   "offices": [
+    {
+     "id": 4054597007,
+     "name": "Remote",
+     "location": null,
+     "child_ids": [],
+     "parent_id": null
+    }
+   ],
+   "ai_disclaimer": null,
+   "include_ai_disclaimer": null,
+   "ai_opt_out_request_url": null
+  }
+ ],
+ "meta": {
+  "total": 11
+ }
+}
