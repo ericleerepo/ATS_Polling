@@ -56,8 +56,8 @@ def run(args: argparse.Namespace) -> int:
                 "profile.md is still the placeholder — LLM scoring skipped, "
                 "ranked by keyword score. Fill in profile.md to enable it."
             )
-        elif not settings.anthropic_api_key:
-            notes.append("ANTHROPIC_API_KEY not set — ranked by keyword score.")
+        elif not settings.gemini_api_key:
+            notes.append("GEMINI_API_KEY not set — ranked by keyword score.")
         else:
             rubric = config.PROMPT_PATH.read_text()
             few_shot = feedback.few_shot_examples(con)

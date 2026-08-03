@@ -21,7 +21,7 @@ DB_PATH = ROOT / "data" / "jobs.db"
 # profile, LLM scoring is skipped and the digest ranks by keyword score.
 PROFILE_PLACEHOLDER_MARKER = "<!-- PLACEHOLDER -->"
 
-DEFAULT_MODEL = "claude-sonnet-5"
+DEFAULT_MODEL = "gemini-2.5-flash"
 
 
 @dataclass
@@ -57,7 +57,7 @@ def load_profile(path: Path = PROFILE_PATH) -> str | None:
 
 @dataclass
 class Settings:
-    anthropic_api_key: str | None
+    gemini_api_key: str | None
     model: str
     gmail_address: str | None
     gmail_app_password: str | None
@@ -67,7 +67,7 @@ class Settings:
     def from_env(cls) -> "Settings":
         gmail = os.environ.get("GMAIL_ADDRESS")
         return cls(
-            anthropic_api_key=os.environ.get("ANTHROPIC_API_KEY"),
+            gemini_api_key=os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY"),
             model=os.environ.get("JOBRADAR_MODEL", DEFAULT_MODEL),
             gmail_address=gmail,
             gmail_app_password=os.environ.get("GMAIL_APP_PASSWORD"),

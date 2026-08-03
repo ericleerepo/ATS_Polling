@@ -3,7 +3,7 @@
 A daily job-posting radar. Every morning it polls the public ATS boards of
 ~46 target companies, diffs against everything it has already seen, hard-filters
 by role/seniority/location, scores the survivors against my profile with the
-Claude API, and emails a digest: **top 5 LLM-ranked matches above the fold**,
+Gemini API, and emails a digest: **top 5 LLM-ranked matches above the fold**,
 everything else one line each below. Speed is the entire edge — postings show
 up in the digest within ~24 hours of publication, while applicant pools are
 still thin.
@@ -23,7 +23,7 @@ poll ATS boards ──► diff vs SQLite ──► hard filters ──► enrich
                                         location)         new-grad flags)
         ┌──────────────────────────────────────────────────────┘
         ▼
-LLM scoring (Claude, batched, strict JSON) ──► digest email (Gmail SMTP)
+LLM scoring (Gemini, batched, strict JSON) ──► digest email (Gmail SMTP)
         │                                            │
         ▼                                            ▼
 scores logged to SQLite ◄── feedback.txt ingest ◄── I reply with `147 +` lines
@@ -36,14 +36,14 @@ workflow commits data/jobs.db back to the repo
 - **Everything is logged from day one**: every scored posting keeps its four
   subscores, composite, rank, and eventual feedback label in SQLite — the
   eval set assembles itself as a byproduct.
-- **Graceful degradation**: if the Claude call fails (or `profile.md` is still
+- **Graceful degradation**: if the LLM call fails (or `profile.md` is still
   the placeholder), the digest ranks by deterministic keyword score instead.
 - **One broken board never kills the run** — per-company failures land in the
   digest notes and the `runs` table.
 
 ## The scoring rubric
 
-Each surviving posting gets four 0–10 subscores from the Claude API
+Each surviving posting gets four 0–10 subscores from the Gemini API
 (`prompts/scoring_prompt.md`, hand-editable): **skill overlap**, **interview
 odds** (new-grad-friendliness; clinical-AI domain advantage folds in here as a
 hireability multiplier), **growth trajectory**, and **story fit**. The
@@ -73,7 +73,7 @@ possible (see Future work).
    - `prompts/scoring_prompt.md` + the `ANGLES` list in
      `src/jobradar/score.py` — your own rubric and narratives.
 2. Add GitHub Actions secrets:
-   - `ANTHROPIC_API_KEY`
+   - `GEMINI_API_KEY`
    - `GMAIL_ADDRESS` + `GMAIL_APP_PASSWORD` (Google account → 2FA on →
      App passwords). Optional `DIGEST_TO` if the digest should go elsewhere.
    - `PROFILE_MD` — the full contents of your `profile.md`

@@ -1,14 +1,15 @@
-"""Layer 3 — LLM scoring via the Claude API.
+"""Layer 3 — LLM scoring via the Gemini API.
 
-Postings are batched per call; strict JSON is enforced with structured
-outputs (output_config.format), so parsing never depends on prompt luck.
-Any failure degrades to keyword-score ranking (the caller handles that by
-leaving Score as None).
+Postings are batched per call; strict JSON is enforced with a response
+schema (response_mime_type=application/json), so parsing never depends on
+prompt luck. Any failure degrades to keyword-score ranking (the caller
+handles that by leaving Score as None).
 """
 
 import json
 
-import anthropic
+from google import genai
+from google.genai import types
 
 from .config import Settings
 from .enrich import keyword_hits
@@ -20,6 +21,7 @@ DESCRIPTION_LIMIT = 1500  # chars of description shown to the model per posting
 
 ANGLES = ["streaming migration", "puma project", "no strong angle"]
 
+# OpenAPI-subset schema (what the Gemini API accepts for response_schema).
 SCORE_SCHEMA = {
     "type": "object",
     "properties": {
@@ -37,12 +39,10 @@ SCORE_SCHEMA = {
                     "angle": {"type": "string", "enum": ANGLES},
                 },
                 "required": ["posting_id", "skill", "odds", "growth", "story", "why", "angle"],
-                "additionalProperties": False,
             },
         }
     },
     "required": ["scores"],
-    "additionalProperties": False,
 }
 
 
@@ -94,22 +94,25 @@ def parse_scores(text: str) -> dict[int, Score]:
 
 
 def score_batch(
-    client: anthropic.Anthropic,
+    client: genai.Client,
     model: str,
     system_prompt: str,
     batch: list[dict],
 ) -> dict[int, Score]:
-    response = client.messages.create(
+    response = client.models.generate_content(
         model=model,
-        max_tokens=MAX_TOKENS,
-        cache_control={"type": "ephemeral"},
-        system=system_prompt,
-        output_config={"format": {"type": "json_schema", "schema": SCORE_SCHEMA}},
-        messages=[{"role": "user", "content": json.dumps({"postings": batch})}],
+        contents=json.dumps({"postings": batch}),
+        config=types.GenerateContentConfig(
+            system_instruction=system_prompt,
+            response_mime_type="application/json",
+            response_schema=SCORE_SCHEMA,
+            max_output_tokens=MAX_TOKENS,
+        ),
     )
-    if response.stop_reason == "refusal":
-        raise RuntimeError("model refused scoring request")
-    text = next(b.text for b in response.content if b.type == "text")
+    text = response.text
+    if not text:  # safety block / truncation — response.text is None or empty
+        finish = response.candidates[0].finish_reason if response.candidates else "no candidates"
+        raise RuntimeError(f"empty model response ({finish})")
     return parse_scores(text)
 
 
@@ -125,7 +128,7 @@ def score_all(
     A failed batch (after one retry) contributes an error string and no
     scores; the caller falls back to keyword rank for those postings.
     """
-    client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
+    client = genai.Client(api_key=settings.gemini_api_key)
     system_prompt = build_system_prompt(rubric, profile, few_shot)
     scores: dict[int, Score] = {}
     errors: list[str] = []
