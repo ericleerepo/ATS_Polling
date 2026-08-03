@@ -72,6 +72,8 @@ def run(args: argparse.Namespace) -> int:
                 else:
                     db.record_score_error(con, e.id, "no score returned")
     print(f"scored {scored}/{len(entries)}", flush=True)
+    for n in notes:  # digest notes also go to the run log — the email may never arrive
+        print(f"NOTE: {n}", flush=True)
 
     # --- digest ---
     date = datetime.now(timezone.utc).strftime("%Y-%m-%d")

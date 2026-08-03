@@ -18,6 +18,9 @@ def send(settings: Settings, subject: str, text: str, html: str) -> None:
     msg["Subject"] = subject
     msg.set_content(text)
     msg.add_alternative(html, subtype="html")
+    # Google displays app passwords as "xxxx xxxx xxxx xxxx"; pasted spaces
+    # are the #1 cause of 535 BadCredentials, and real ones never contain them.
+    password = settings.gmail_app_password.replace(" ", "")
     with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, timeout=60) as smtp:
-        smtp.login(settings.gmail_address, settings.gmail_app_password)
+        smtp.login(settings.gmail_address, password)
         smtp.send_message(msg)
