@@ -78,8 +78,11 @@ possible (see Future work).
      App passwords). Optional `DIGEST_TO` if the digest should go elsewhere.
    - `PROFILE_MD` — the full contents of your `profile.md`
      (`gh secret set PROFILE_MD < profile.md`).
-3. Run it once by hand: Actions → *daily digest* → *Run workflow*. Green run +
-   email in your inbox = done; the cron takes over from there.
+3. Validate credentials cheaply: Actions → *setup check* → *Run workflow*.
+   It makes one tiny Gemini call and one SMTP login — green means both
+   secrets work.
+4. Run the pipeline once by hand: Actions → *daily digest* → *Run workflow*.
+   Green run + email in your inbox = done; the cron takes over from there.
 
 Local development:
 

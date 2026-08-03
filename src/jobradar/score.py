@@ -7,6 +7,7 @@ handles that by leaving Score as None).
 """
 
 import json
+import time
 
 from google import genai
 from google.genai import types
@@ -15,8 +16,12 @@ from .config import Settings
 from .enrich import keyword_hits
 from .model import Posting, Score
 
-BATCH_SIZE = 8
+BATCH_SIZE = 12
 MAX_TOKENS = 8000
+# Free-tier keys allow only a handful of requests/minute; 429s are expected
+# on the bootstrap run and just mean "wait for the next window".
+RATE_LIMIT_SLEEP = 21
+MAX_ATTEMPTS = 6
 DESCRIPTION_LIMIT = 1500  # chars of description shown to the model per posting
 
 ANGLES = ["streaming migration", "puma project", "no strong angle"]
@@ -135,13 +140,17 @@ def score_all(
     for i in range(0, len(postings), BATCH_SIZE):
         batch = postings[i : i + BATCH_SIZE]
         last_error = None
-        for _attempt in range(2):
+        for attempt in range(MAX_ATTEMPTS):
             try:
                 scores.update(score_batch(client, settings.model, system_prompt, batch))
                 last_error = None
                 break
             except Exception as e:  # noqa: BLE001 — any failure means keyword fallback
-                last_error = f"batch {i // BATCH_SIZE}: {type(e).__name__}: {e}"
+                last_error = f"batch {i // BATCH_SIZE}: {type(e).__name__}: {str(e)[:300]}"
+                if getattr(e, "code", None) == 429:  # rate limit: wait out the window
+                    time.sleep(RATE_LIMIT_SLEEP)
+                elif attempt >= 1:  # anything else gets one retry, then keyword fallback
+                    break
         if last_error:
             errors.append(last_error)
     return scores, errors

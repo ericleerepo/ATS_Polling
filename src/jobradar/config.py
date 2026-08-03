@@ -21,7 +21,7 @@ DB_PATH = ROOT / "data" / "jobs.db"
 # profile, LLM scoring is skipped and the digest ranks by keyword score.
 PROFILE_PLACEHOLDER_MARKER = "<!-- PLACEHOLDER -->"
 
-DEFAULT_MODEL = "gemini-2.5-flash"
+DEFAULT_MODEL = "gemini-3.5-flash"
 
 
 @dataclass
