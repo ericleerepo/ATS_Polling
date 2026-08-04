@@ -19,7 +19,9 @@ concurrency:
 jobs:
   backfill:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # Scores are committed to the DB per batch, so a timeout keeps the work
+    # done so far; just dispatch again to continue where it left off.
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 
@@ -41,6 +43,7 @@ jobs:
         run: python -m jobradar backfill ${{ inputs.limit && format('--limit {0}', inputs.limit) || '' }}
 
       - name: Commit DB
+        if: always() # partial progress is still worth keeping
         run: |
           git config user.name "job-radar bot"
           git config user.email "github-actions[bot]@users.noreply.github.com"

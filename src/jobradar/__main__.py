@@ -137,15 +137,18 @@ def backfill(args: argparse.Namespace) -> int:
         return 0
 
     batches = (len(rows) + score.BATCH_SIZE - 1) // score.BATCH_SIZE
-    print(
-        f"backfilling {len(rows)} postings in {batches} batches "
-        f"(~{batches * score.MIN_INTERVAL / 60:.0f} min at the current pace)",
-        flush=True,
-    )
+    print(f"backfilling {len(rows)} postings in ~{batches} batches", flush=True)
     rendered = [
         score.render_posting(r["id"], db.posting_from_row(r), db.annotations_from_row(r))
         for r in rows
     ]
+
+    def persist(batch_scores):
+        """Commit each batch as it lands so a timeout can't discard the work."""
+        for posting_id, s in batch_scores.items():
+            db.record_score(con, posting_id, s)
+        con.commit()
+
     scores, errors = score.score_all(
         settings,
         config.PROMPT_PATH.read_text(),
@@ -153,20 +156,19 @@ def backfill(args: argparse.Namespace) -> int:
         feedback.few_shot_examples(con),
         rendered,
         progress=lambda done, total, n: print(
-            f"  batch {done}/{total} — {n} scored", flush=True
+            f"  batch {done}/{total} — {n} scored (saved)", flush=True
         ),
+        on_scored=persist,
     )
     for r in rows:
-        if s := scores.get(r["id"]):
-            db.record_score(con, r["id"], s)
-        else:
+        if r["id"] not in scores:
             db.record_score_error(con, r["id"], "backfill: no score returned")
     con.commit()
     con.close()
     for e in errors:
         print(f"NOTE: {e}", flush=True)
     print(f"scored {len(scores)}/{len(rows)}")
-    return 0
+    return 0 if scores else 1
 
 
 def main() -> int:

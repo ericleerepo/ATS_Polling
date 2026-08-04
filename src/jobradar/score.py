@@ -18,13 +18,21 @@ from .config import Settings
 from .enrich import keyword_hits
 from .model import Posting, Score
 
-BATCH_SIZE = 25
-MAX_TOKENS = 8000
-MAX_ATTEMPTS = 4
-# Free-tier keys allow ~5 requests/minute. Pace proactively — waiting between
-# requests costs seconds, while tripping the limit costs the whole batch.
-# Set JOBRADAR_MIN_INTERVAL=0 on a paid key to run flat out.
+# Free-tier quotas are per-minute *token* budgets, not just request counts, so
+# an oversized batch fails no matter how long you wait for it. 10 postings is
+# ~5.8K input tokens; 25 was ~12.6K and got rejected every single time.
+BATCH_SIZE = int(os.environ.get("JOBRADAR_BATCH_SIZE", "10"))
+MIN_BATCH = 3  # floor for the adaptive split below
+MAX_ATTEMPTS = 3
+# Reserved output tokens count against that budget, so size them to the batch
+# instead of reserving a flat 8K for what is really ~100 tokens per posting.
+OUTPUT_TOKENS_PER_POSTING = 150
+OUTPUT_TOKENS_BASE = 400
+# Pace proactively — waiting between requests costs seconds, tripping the limit
+# costs the batch. Set JOBRADAR_MIN_INTERVAL=0 on a paid key to run flat out.
 MIN_INTERVAL = float(os.environ.get("JOBRADAR_MIN_INTERVAL", "13"))
+# Stop burning wall-clock once it's clear the quota is gone.
+MAX_CONSECUTIVE_FAILURES = 4
 
 _RETRY_DELAY = re.compile(r"'retryDelay':\s*'(\d+(?:\.\d+)?)s'")
 DESCRIPTION_LIMIT = 1500  # chars of description shown to the model per posting
@@ -128,6 +136,10 @@ def parse_scores(text: str) -> dict[int, Score]:
     return out
 
 
+def output_budget(batch_size: int) -> int:
+    return OUTPUT_TOKENS_BASE + OUTPUT_TOKENS_PER_POSTING * batch_size
+
+
 def score_batch(
     client: genai.Client,
     model: str,
@@ -141,7 +153,7 @@ def score_batch(
             system_instruction=system_prompt,
             response_mime_type="application/json",
             response_schema=SCORE_SCHEMA,
-            max_output_tokens=MAX_TOKENS,
+            max_output_tokens=output_budget(len(batch)),
         ),
     )
     text = response.text
@@ -158,35 +170,77 @@ def score_all(
     few_shot: str,
     postings: list[dict],
     progress=None,
+    on_scored=None,
 ) -> tuple[dict[int, Score], list[str]]:
     """Score rendered postings in batches. Returns (scores, errors).
 
     A failed batch (after retries) contributes an error string and no scores;
-    the caller falls back to keyword rank for those postings. `progress` is an
-    optional callback(batches_done, batches_total, scores_so_far).
+    the caller falls back to keyword rank for those postings. A batch rejected
+    for rate limits is halved and retried, since free-tier quotas are per-minute
+    *token* budgets that an oversized request can never satisfy by waiting.
+
+    `progress` is an optional callback(batches_done, batches_total, scores_so_far).
+    `on_scored` is called with each batch's scores as soon as they arrive, so
+    callers can persist incrementally instead of losing everything to a timeout.
     """
     client = genai.Client(api_key=settings.gemini_api_key)
     system_prompt = build_system_prompt(rubric, profile, few_shot)
     pacer = Pacer()
     scores: dict[int, Score] = {}
     errors: list[str] = []
-    batches = [postings[i : i + BATCH_SIZE] for i in range(0, len(postings), BATCH_SIZE)]
-    for n, batch in enumerate(batches):
-        last_error = None
-        for attempt in range(MAX_ATTEMPTS):
-            pacer.wait()
-            try:
-                scores.update(score_batch(client, settings.model, system_prompt, batch))
-                last_error = None
+    queue = [postings[i : i + BATCH_SIZE] for i in range(0, len(postings), BATCH_SIZE)]
+    total = len(queue)
+    done = 0
+    consecutive_failures = 0
+
+    while queue:
+        batch = queue.pop(0)
+        result, error, rate_limited = _attempt_batch(
+            client, settings.model, system_prompt, batch, pacer
+        )
+
+        if result is not None:
+            scores.update(result)
+            if on_scored:
+                on_scored(result)  # persist now — a later timeout must not lose this
+            consecutive_failures = 0
+        elif rate_limited and len(batch) > MIN_BATCH:
+            # Oversized for the per-minute token budget: halve it and retry.
+            # Waiting cannot help a request that is too big on its own.
+            mid = len(batch) // 2
+            queue[:0] = [batch[:mid], batch[mid:]]
+            total += 1
+            errors.append(f"split batch of {len(batch)} after rate limit")
+            continue
+        else:
+            errors.append(error or "unknown failure")
+            consecutive_failures += 1
+            if consecutive_failures >= MAX_CONSECUTIVE_FAILURES:
+                errors.append(
+                    f"aborting: {consecutive_failures} batches failed in a row "
+                    f"({len(queue)} left unscored — quota is likely exhausted)"
+                )
                 break
-            except Exception as e:  # noqa: BLE001 — any failure means keyword fallback
-                last_error = f"batch {n}: {type(e).__name__}: {str(e)[:200]}"
-                if is_rate_limit(e):
-                    time.sleep(retry_delay(e))
-                elif attempt >= 1:  # non-rate-limit: one retry, then keyword fallback
-                    break
-        if last_error:
-            errors.append(last_error)
+
+        done += 1
         if progress:
-            progress(n + 1, len(batches), len(scores))
+            progress(done, total, len(scores))
     return scores, errors
+
+
+def _attempt_batch(client, model, system_prompt, batch, pacer):
+    """Returns (scores | None, error | None, hit_rate_limit)."""
+    last_error, rate_limited = None, False
+    for attempt in range(MAX_ATTEMPTS):
+        pacer.wait()
+        try:
+            return score_batch(client, model, system_prompt, batch), None, False
+        except Exception as e:  # noqa: BLE001 — any failure means keyword fallback
+            last_error = f"batch of {len(batch)}: {type(e).__name__}: {str(e)[:180]}"
+            if is_rate_limit(e):
+                rate_limited = True
+                if attempt < MAX_ATTEMPTS - 1:
+                    time.sleep(retry_delay(e))
+            elif attempt >= 1:  # non-rate-limit: one retry, then give up on it
+                break
+    return None, last_error, rate_limited
