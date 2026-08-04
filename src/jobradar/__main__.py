@@ -115,6 +115,60 @@ def run(args: argparse.Namespace) -> int:
     return 0
 
 
+def backfill(args: argparse.Namespace) -> int:
+    """Score kept postings that never got an LLM score (e.g. rate-limited).
+
+    Digest ranks already sent are left alone — this fills in the scores so the
+    eval set and future few-shot examples are complete.
+    """
+    settings = Settings.from_env()
+    profile = load_profile()
+    if profile is None:
+        print("profile.md is missing or still the placeholder", file=sys.stderr)
+        return 1
+    if not settings.gemini_api_key:
+        print("GEMINI_API_KEY not set", file=sys.stderr)
+        return 1
+
+    con = db.connect(config.DB_PATH)
+    rows = db.unscored_kept(con, limit=args.limit)
+    if not rows:
+        print("nothing to backfill")
+        return 0
+
+    batches = (len(rows) + score.BATCH_SIZE - 1) // score.BATCH_SIZE
+    print(
+        f"backfilling {len(rows)} postings in {batches} batches "
+        f"(~{batches * score.MIN_INTERVAL / 60:.0f} min at the current pace)",
+        flush=True,
+    )
+    rendered = [
+        score.render_posting(r["id"], db.posting_from_row(r), db.annotations_from_row(r))
+        for r in rows
+    ]
+    scores, errors = score.score_all(
+        settings,
+        config.PROMPT_PATH.read_text(),
+        profile,
+        feedback.few_shot_examples(con),
+        rendered,
+        progress=lambda done, total, n: print(
+            f"  batch {done}/{total} — {n} scored", flush=True
+        ),
+    )
+    for r in rows:
+        if s := scores.get(r["id"]):
+            db.record_score(con, r["id"], s)
+        else:
+            db.record_score_error(con, r["id"], "backfill: no score returned")
+    con.commit()
+    con.close()
+    for e in errors:
+        print(f"NOTE: {e}", flush=True)
+    print(f"scored {len(scores)}/{len(rows)}")
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(prog="jobradar")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -122,8 +176,10 @@ def main() -> int:
     run_p.add_argument("--dry-run", action="store_true", help="print digest, roll back DB")
     run_p.add_argument("--no-email", action="store_true", help="print digest instead of sending")
     run_p.add_argument("--no-llm", action="store_true", help="skip LLM scoring (keyword rank)")
+    fill_p = sub.add_parser("backfill", help="score kept postings that have no LLM score")
+    fill_p.add_argument("--limit", type=int, help="only backfill the first N postings")
     args = parser.parse_args()
-    return run(args)
+    return backfill(args) if args.command == "backfill" else run(args)
 
 
 if __name__ == "__main__":

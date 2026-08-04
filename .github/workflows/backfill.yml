@@ -1,0 +1,54 @@
+# One-shot: score kept postings left unscored by an earlier run (rate limits).
+# Sends no email; commits the updated DB.
+name: backfill scores
+
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "Only backfill the first N postings (blank = all)"
+        required: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-run # never race the daily pipeline's DB commit
+  cancel-in-progress: false
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: pip install .
+
+      - name: Write profile from secret
+        env:
+          PROFILE_MD: ${{ secrets.PROFILE_MD }}
+        run: printf '%s\n' "$PROFILE_MD" > profile.md
+
+      - name: Backfill
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python -m jobradar backfill ${{ inputs.limit && format('--limit {0}', inputs.limit) || '' }}
+
+      - name: Commit DB
+        run: |
+          git config user.name "job-radar bot"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/jobs.db
+          if git diff --cached --quiet; then
+            echo "no changes to commit"
+          else
+            git commit -m "backfill scores $(date -u +%F)"
+            git pull --rebase origin main
+            git push
+          fi

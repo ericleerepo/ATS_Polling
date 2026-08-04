@@ -110,6 +110,44 @@ def insert_posting(con: sqlite3.Connection, p: Posting, ann: Annotations) -> int
     return cur.lastrowid
 
 
+def unscored_kept(con: sqlite3.Connection, limit: int | None = None) -> list[sqlite3.Row]:
+    """Kept postings that never got an LLM score (rate-limited, or errored)."""
+    sql = (
+        "SELECT * FROM postings WHERE filter_result='kept' AND llm_composite IS NULL"
+        " ORDER BY id"
+    )
+    if limit:
+        sql += f" LIMIT {int(limit)}"
+    return con.execute(sql).fetchall()
+
+
+def posting_from_row(row: sqlite3.Row) -> Posting:
+    return Posting(
+        source=row["source"],
+        company=row["company"],
+        external_id=row["external_id"],
+        url=row["url"] or "",
+        title=row["title"] or "",
+        location=row["location"] or "",
+        description=row["description"] or "",
+        posted_at=row["posted_at"],
+        comp_min=row["comp_min"],
+        comp_max=row["comp_max"],
+        comp_raw=row["comp_raw"],
+    )
+
+
+def annotations_from_row(row: sqlite3.Row) -> Annotations:
+    return Annotations(
+        filter_result=row["filter_result"],
+        senior_flag=bool(row["senior_flag"]),
+        hybrid_flag=bool(row["hybrid_flag"]),
+        new_grad_flag=bool(row["new_grad_flag"]),
+        priority_company=bool(row["priority_company"]),
+        keyword_score=row["keyword_score"] or 0.0,
+    )
+
+
 def record_score(con: sqlite3.Connection, posting_id: int, s: Score) -> None:
     con.execute(
         """

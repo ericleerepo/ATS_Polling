@@ -7,6 +7,8 @@ handles that by leaving Score as None).
 """
 
 import json
+import os
+import re
 import time
 
 from google import genai
@@ -16,12 +18,15 @@ from .config import Settings
 from .enrich import keyword_hits
 from .model import Posting, Score
 
-BATCH_SIZE = 12
+BATCH_SIZE = 25
 MAX_TOKENS = 8000
-# Free-tier keys allow only a handful of requests/minute; 429s are expected
-# on the bootstrap run and just mean "wait for the next window".
-RATE_LIMIT_SLEEP = 21
-MAX_ATTEMPTS = 6
+MAX_ATTEMPTS = 4
+# Free-tier keys allow ~5 requests/minute. Pace proactively — waiting between
+# requests costs seconds, while tripping the limit costs the whole batch.
+# Set JOBRADAR_MIN_INTERVAL=0 on a paid key to run flat out.
+MIN_INTERVAL = float(os.environ.get("JOBRADAR_MIN_INTERVAL", "13"))
+
+_RETRY_DELAY = re.compile(r"'retryDelay':\s*'(\d+(?:\.\d+)?)s'")
 DESCRIPTION_LIMIT = 1500  # chars of description shown to the model per posting
 
 ANGLES = ["streaming migration", "puma project", "no strong angle"]
@@ -49,6 +54,31 @@ SCORE_SCHEMA = {
     },
     "required": ["scores"],
 }
+
+
+class Pacer:
+    """Enforces a minimum gap between requests (monotonic clock)."""
+
+    def __init__(self, interval: float = MIN_INTERVAL):
+        self.interval = interval
+        self._last: float | None = None
+
+    def wait(self) -> None:
+        if self.interval > 0 and self._last is not None:
+            remaining = self.interval - (time.monotonic() - self._last)
+            if remaining > 0:
+                time.sleep(remaining)
+        self._last = time.monotonic()
+
+
+def retry_delay(error: Exception) -> float:
+    """Seconds to back off after a rate-limit error, using the API's own hint."""
+    m = _RETRY_DELAY.search(str(error))
+    return float(m.group(1)) + 1 if m else MIN_INTERVAL
+
+
+def is_rate_limit(error: Exception) -> bool:
+    return getattr(error, "code", None) == 429 or "RESOURCE_EXHAUSTED" in str(error)
 
 
 def build_system_prompt(rubric: str, profile: str, few_shot: str) -> str:
@@ -127,30 +157,36 @@ def score_all(
     profile: str,
     few_shot: str,
     postings: list[dict],
+    progress=None,
 ) -> tuple[dict[int, Score], list[str]]:
     """Score rendered postings in batches. Returns (scores, errors).
 
-    A failed batch (after one retry) contributes an error string and no
-    scores; the caller falls back to keyword rank for those postings.
+    A failed batch (after retries) contributes an error string and no scores;
+    the caller falls back to keyword rank for those postings. `progress` is an
+    optional callback(batches_done, batches_total, scores_so_far).
     """
     client = genai.Client(api_key=settings.gemini_api_key)
     system_prompt = build_system_prompt(rubric, profile, few_shot)
+    pacer = Pacer()
     scores: dict[int, Score] = {}
     errors: list[str] = []
-    for i in range(0, len(postings), BATCH_SIZE):
-        batch = postings[i : i + BATCH_SIZE]
+    batches = [postings[i : i + BATCH_SIZE] for i in range(0, len(postings), BATCH_SIZE)]
+    for n, batch in enumerate(batches):
         last_error = None
         for attempt in range(MAX_ATTEMPTS):
+            pacer.wait()
             try:
                 scores.update(score_batch(client, settings.model, system_prompt, batch))
                 last_error = None
                 break
             except Exception as e:  # noqa: BLE001 — any failure means keyword fallback
-                last_error = f"batch {i // BATCH_SIZE}: {type(e).__name__}: {str(e)[:300]}"
-                if getattr(e, "code", None) == 429:  # rate limit: wait out the window
-                    time.sleep(RATE_LIMIT_SLEEP)
-                elif attempt >= 1:  # anything else gets one retry, then keyword fallback
+                last_error = f"batch {n}: {type(e).__name__}: {str(e)[:200]}"
+                if is_rate_limit(e):
+                    time.sleep(retry_delay(e))
+                elif attempt >= 1:  # non-rate-limit: one retry, then keyword fallback
                     break
         if last_error:
             errors.append(last_error)
+        if progress:
+            progress(n + 1, len(batches), len(scores))
     return scores, errors
