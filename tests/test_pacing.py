@@ -95,3 +95,26 @@ def test_unscored_kept_selects_only_unscored_kept_rows(tmp_path):
 
     db.record_score(con, pid, Score(8, 8, 8, 8, why="w", angle="puma project"))
     assert db.unscored_kept(con) == []
+
+
+def test_quota_detail_survives_truncation():
+    """The quota id sits deep in the payload — past a naive [:180] cut."""
+    err = Exception(
+        "429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your "
+        "current quota, please check your plan and billing details. For more information "
+        "on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits.', "
+        "'details': [{'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': "
+        "[{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', "
+        "'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaValue': '250'}]}, "
+        "{'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '32s'}]}}"
+    )
+    desc = score.describe_error(err, 10)
+    assert "PerDay" in desc, desc          # the distinction that matters
+    assert "quotaValue=250" in desc
+    assert "retryDelay=33s" in desc
+
+
+def test_describe_error_keeps_non_quota_errors_short():
+    desc = score.describe_error(ValueError("x" * 500), 5)
+    assert desc.startswith("batch of 5: ValueError:")
+    assert len(desc) < 240

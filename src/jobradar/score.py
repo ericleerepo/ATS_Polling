@@ -89,6 +89,21 @@ def is_rate_limit(error: Exception) -> bool:
     return getattr(error, "code", None) == 429 or "RESOURCE_EXHAUSTED" in str(error)
 
 
+def quota_detail(error: Exception) -> str:
+    """Name the quota that was hit — per-minute and per-day limits need
+    completely different responses, and the distinction lives deep in the
+    error payload, past where a naive truncation would cut it off."""
+    bits = re.findall(r"'(quotaId|quotaMetric|quotaValue)':\s*'([^']*)'", str(error))
+    return " ".join(f"{k}={v}" for k, v in bits) or "quota unspecified"
+
+
+def describe_error(error: Exception, batch_size: int) -> str:
+    label = f"batch of {batch_size}: {type(error).__name__}"
+    if is_rate_limit(error):
+        return f"{label}: 429 [{quota_detail(error)}] retryDelay={retry_delay(error):.0f}s"
+    return f"{label}: {str(error)[:180]}"
+
+
 def build_system_prompt(rubric: str, profile: str, few_shot: str) -> str:
     parts = [
         rubric,
@@ -236,7 +251,7 @@ def _attempt_batch(client, model, system_prompt, batch, pacer):
         try:
             return score_batch(client, model, system_prompt, batch), None, False
         except Exception as e:  # noqa: BLE001 — any failure means keyword fallback
-            last_error = f"batch of {len(batch)}: {type(e).__name__}: {str(e)[:180]}"
+            last_error = describe_error(e, len(batch))
             if is_rate_limit(e):
                 rate_limited = True
                 if attempt < MAX_ATTEMPTS - 1:
