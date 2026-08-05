@@ -24,10 +24,13 @@ from .model import Posting, Score
 BATCH_SIZE = int(os.environ.get("JOBRADAR_BATCH_SIZE", "10"))
 MIN_BATCH = 3  # floor for the adaptive split below
 MAX_ATTEMPTS = 3
-# Reserved output tokens count against that budget, so size them to the batch
-# instead of reserving a flat 8K for what is really ~100 tokens per posting.
-OUTPUT_TOKENS_PER_POSTING = 150
-OUTPUT_TOKENS_BASE = 400
+# Gemini 3.x spends *thinking* tokens out of max_output_tokens, so the budget
+# has to cover reasoning plus the JSON — sizing it to the JSON alone truncates
+# the response mid-string. Keep thinking minimal (the rubric does the work) and
+# still leave generous headroom.
+OUTPUT_TOKENS_PER_POSTING = 400
+OUTPUT_TOKENS_BASE = 2000
+THINKING_LEVEL = types.ThinkingLevel.MINIMAL
 # Pace proactively — waiting between requests costs seconds, tripping the limit
 # costs the batch. Set JOBRADAR_MIN_INTERVAL=0 on a paid key to run flat out.
 MIN_INTERVAL = float(os.environ.get("JOBRADAR_MIN_INTERVAL", "13"))
@@ -169,12 +172,20 @@ def score_batch(
             response_mime_type="application/json",
             response_schema=SCORE_SCHEMA,
             max_output_tokens=output_budget(len(batch)),
+            thinking_config=types.ThinkingConfig(thinking_level=THINKING_LEVEL),
         ),
     )
+    finish = response.candidates[0].finish_reason if response.candidates else None
+    if finish == types.FinishReason.MAX_TOKENS:
+        # Truncated mid-JSON. Say so plainly — the raw JSONDecodeError points at
+        # a column number and hides that the budget is what actually ran out.
+        raise RuntimeError(
+            f"response truncated at max_output_tokens="
+            f"{output_budget(len(batch))} for {len(batch)} postings"
+        )
     text = response.text
-    if not text:  # safety block / truncation — response.text is None or empty
-        finish = response.candidates[0].finish_reason if response.candidates else "no candidates"
-        raise RuntimeError(f"empty model response ({finish})")
+    if not text:  # safety block, or nothing but thinking tokens
+        raise RuntimeError(f"empty model response (finish_reason={finish})")
     return parse_scores(text)
 
 
