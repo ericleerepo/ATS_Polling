@@ -55,7 +55,7 @@ companies:
   - {name: Braintrust, ats: ashby, token: braintrust}
   - {name: Elicit, ats: ashby, token: elicit}
   - {name: Cerebras, ats: ashby, token: cerebras}
-  - {name: Fireworks AI, ats: ashby, token: fireworksai}
+  - {name: Fireworks AI, ats: ashby, token: fireworks}
   - {name: Cognition (Windsurf), ats: ashby, token: cognition}
   - {name: Sourcegraph, ats: greenhouse, token: sourcegraph91}
   - {name: Vanta, ats: ashby, token: vanta}
