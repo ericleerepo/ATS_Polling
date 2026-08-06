@@ -1,0 +1,39 @@
+# Full-pipeline rehearsal: polls, filters and scores for real against the live
+# Gemini API, then prints the digest and rolls the DB back. Sends no email and
+# consumes no postings, so tomorrow's scheduled run still sees them as new.
+#
+# Costs a couple of requests from the free-tier daily budget (20/day/model),
+# which resets at midnight Pacific. Run it after touching scoring.
+name: verify pipeline
+
+on:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: pip install .
+
+      - name: Write profile from secret
+        env:
+          PROFILE_MD: ${{ secrets.PROFILE_MD }}
+        run: |
+          if [ -n "$PROFILE_MD" ]; then
+            printf '%s\n' "$PROFILE_MD" > profile.md
+          else
+            echo "PROFILE_MD secret not set — LLM scoring will be skipped"
+            exit 1
+          fi
+
+      - name: Dry run
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python -m jobradar run --dry-run
