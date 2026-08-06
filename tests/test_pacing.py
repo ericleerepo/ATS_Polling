@@ -41,6 +41,47 @@ def test_is_rate_limit_detects_both_shapes():
     assert not score.is_rate_limit(Exception("404 NOT_FOUND"))
 
 
+# Verbatim shape from the 2026-08-06 backfill log, where splitting the batch
+# on this error just spent more of the exhausted request budget.
+DAILY_QUOTA_ERROR = Exception(
+    "429 RESOURCE_EXHAUSTED {'error': {'details': [{'violations': [{'quotaMetric': "
+    "'generativelanguage.googleapis.com/generate_content_free_tier_requests', "
+    "'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', "
+    "'quotaValue': '20'}]}]}}"
+)
+PER_MINUTE_QUOTA_ERROR = Exception(
+    "429 RESOURCE_EXHAUSTED {'error': {'details': [{'violations': [{'quotaId': "
+    "'GenerateRequestsPerMinutePerProjectPerModel-FreeTier'}]}]}}"
+)
+
+
+def test_daily_quota_distinguished_from_per_minute():
+    # Both are 429s, but only the per-minute one is worth splitting or waiting out.
+    assert score.is_daily_quota(DAILY_QUOTA_ERROR)
+    assert not score.is_daily_quota(PER_MINUTE_QUOTA_ERROR)
+    assert score.is_rate_limit(PER_MINUTE_QUOTA_ERROR)
+    assert not score.is_daily_quota(Exception("404 NOT_FOUND"))
+
+
+def test_daily_quota_stops_instead_of_retrying(monkeypatch):
+    calls = []
+
+    def fail(*args):
+        calls.append("request")
+        raise DAILY_QUOTA_ERROR
+
+    monkeypatch.setattr(score, "score_batch", fail)
+    monkeypatch.setattr(score.time, "sleep", lambda s: calls.append("slept"))
+
+    result, error, rate_limited, gone = score._attempt_batch(
+        None, "m", "sys", [{"posting_id": 1}], score.Pacer(interval=0)
+    )
+
+    assert (result, rate_limited, gone) == (None, True, True)
+    assert "GenerateRequestsPerDayPerProjectPerModel" in error
+    assert calls == ["request"], "must not retry or sleep against a per-day quota"
+
+
 def make_row(tmp_path) -> sqlite3.Row:
     con = db.connect(tmp_path / "jobs.db")
     p = Posting(

@@ -38,6 +38,7 @@ MIN_INTERVAL = float(os.environ.get("JOBRADAR_MIN_INTERVAL", "13"))
 MAX_CONSECUTIVE_FAILURES = 4
 
 _RETRY_DELAY = re.compile(r"'retryDelay':\s*'(\d+(?:\.\d+)?)s'")
+_DAILY_QUOTA = re.compile(r"'quotaId':\s*'[^']*PerDay[^']*'")
 DESCRIPTION_LIMIT = 1500  # chars of description shown to the model per posting
 
 ANGLES = ["streaming migration", "puma project", "no strong angle"]
@@ -90,6 +91,14 @@ def retry_delay(error: Exception) -> float:
 
 def is_rate_limit(error: Exception) -> bool:
     return getattr(error, "code", None) == 429 or "RESOURCE_EXHAUSTED" in str(error)
+
+
+def is_daily_quota(error: Exception) -> bool:
+    """True when the exhausted quota is a per-DAY one. That is a wall, not a
+    speed bump: splitting the batch spends *more* of a request budget that is
+    already gone, and retryDelay (~60s) is the API being polite about a limit
+    that will not lift until tomorrow. Stop instead."""
+    return is_rate_limit(error) and bool(_DAILY_QUOTA.search(str(error)))
 
 
 def quota_detail(error: Exception) -> str:
@@ -221,7 +230,7 @@ def score_all(
 
     while queue:
         batch = queue.pop(0)
-        result, error, rate_limited = _attempt_batch(
+        result, error, rate_limited, daily_quota_gone = _attempt_batch(
             client, settings.model, system_prompt, batch, pacer
         )
 
@@ -230,6 +239,15 @@ def score_all(
             if on_scored:
                 on_scored(result)  # persist now — a later timeout must not lose this
             consecutive_failures = 0
+        elif daily_quota_gone:
+            # Nothing left to spend today. Whatever is already scored stands;
+            # the rest keeps its keyword rank and gets picked up tomorrow.
+            errors.append(error or "daily quota exhausted")
+            errors.append(
+                f"stopping: daily request quota exhausted "
+                f"({len(queue) + 1} batches left unscored — retry tomorrow)"
+            )
+            break
         elif rate_limited and len(batch) > MIN_BATCH:
             # Oversized for the per-minute token budget: halve it and retry.
             # Waiting cannot help a request that is too big on its own.
@@ -255,18 +273,20 @@ def score_all(
 
 
 def _attempt_batch(client, model, system_prompt, batch, pacer):
-    """Returns (scores | None, error | None, hit_rate_limit)."""
+    """Returns (scores | None, error | None, hit_rate_limit, daily_quota_gone)."""
     last_error, rate_limited = None, False
     for attempt in range(MAX_ATTEMPTS):
         pacer.wait()
         try:
-            return score_batch(client, model, system_prompt, batch), None, False
+            return score_batch(client, model, system_prompt, batch), None, False, False
         except Exception as e:  # noqa: BLE001 — any failure means keyword fallback
             last_error = describe_error(e, len(batch))
+            if is_daily_quota(e):
+                return None, last_error, True, True  # no retry: gone until tomorrow
             if is_rate_limit(e):
                 rate_limited = True
                 if attempt < MAX_ATTEMPTS - 1:
                     time.sleep(retry_delay(e))
             elif attempt >= 1:  # non-rate-limit: one retry, then give up on it
                 break
-    return None, last_error, rate_limited
+    return None, last_error, rate_limited, False
